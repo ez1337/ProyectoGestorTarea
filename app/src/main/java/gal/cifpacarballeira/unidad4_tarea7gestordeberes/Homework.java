@@ -9,6 +9,7 @@ public class Homework implements Parcelable {
     private String description; // Descripción del deber
     private String dueDate; // Fecha de entrega en formato dd/MM/yyyy
     private boolean isCompleted; // Estado del deber
+    private int id;
 
     // Constructor
     public Homework(String subject, String description, String dueDate, boolean isCompleted) {
