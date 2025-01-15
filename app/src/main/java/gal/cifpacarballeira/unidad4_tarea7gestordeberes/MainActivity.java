@@ -1,4 +1,6 @@
 package gal.cifpacarballeira.unidad4_tarea7gestordeberes;
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -24,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private HomeworkAdapter adapter;
     private List<Homework> homeworkList;
+    private SQLiteDatabase hwDBWrite;
+    private SQLiteDatabase hwDBRead;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,4 +140,16 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
+
+    // Metodos CRUD
+    public void insertHW(SQLiteDatabase dbWrite, Homework hw){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("subject",hw.getSubject());
+        contentValues.put("description",hw.getDescription());
+        contentValues.put("duedate",hw.getDueDate());
+        contentValues.put("completed",hw.getCompletedInt());
+
+        dbWrite.insert("homework",null,contentValues);
+    }
+
 }
