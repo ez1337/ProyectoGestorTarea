@@ -28,6 +28,14 @@ public class Homework implements Parcelable {
     }
 
     // Getters y Setters
+    public int getId(){
+        return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
+    }
+
     public String getSubject() {
         return subject;
     }
