@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,9 +27,11 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private HomeworkAdapter adapter;
-    private List<Homework> homeworkList;
+    // Sustituir por el ViewModel
+    //    private List<Homework> homeworkList;
     private SQLiteDatabase hwDBWrite;
     private SQLiteDatabase hwDBRead;
+    private HomeworkViewModel homeworkList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +51,21 @@ public class MainActivity extends AppCompatActivity {
         // Inicialización de componentes
         recyclerView = findViewById(R.id.recyclerView);
         FloatingActionButton fab = findViewById(R.id.fab);
-        homeworkList = new ArrayList<>();
+//        homeworkList = new ArrayList<>();
+
+        // Inicialización del ViewModel
+        homeworkList = new ViewModelProvider(this).get(HomeworkViewModel.class);
 
         // Cargar datos desde la base de datos
-        readAllHw(hwDBRead,homeworkList);
+        readAllHw(hwDBRead,homeworkList.getList().getValue());
 
         // Crear y configurar el adaptador
-        adapter = new HomeworkAdapter(homeworkList, homework -> showBottomSheet(homework));
+        adapter = new HomeworkAdapter(homeworkList.getList().getValue(), homework -> showBottomSheet(homework));
+
+        // Establecer el observador cuando el set de datos cambia
+        homeworkList.getList().observe(this, homeworkList -> {
+            adapter.notifyDataSetChanged();
+        });
 
         // Este código sería lo mismo que la anterior línea
         // adapter = new HomeworkAdapter(homeworkList, this::showBottomSheet);
@@ -82,13 +93,13 @@ public class MainActivity extends AppCompatActivity {
         }
         dialog.setOnHomeworkSavedListener(homework -> {
                     if (homeworkToEdit == null) {
-                        homeworkList.add(homework);
+//                        homeworkList.add(homework);
+                        homeworkList.addHomeworkToList(homework);
                         insertHW(hwDBWrite, hwDBRead, homework);
                     } else {
-                        homeworkList.set(homeworkList.indexOf(homeworkToEdit), homework);
+                        homeworkList.updateHomeworkInList(homework);
                         updateHw(hwDBWrite,homeworkToEdit,homework);
                     }
-            adapter.notifyDataSetChanged();
                 });
         dialog.show(getSupportFragmentManager(), "AddHomeworkDialog");
 //
@@ -130,8 +141,9 @@ public class MainActivity extends AppCompatActivity {
         view.findViewById(R.id.completeOption).setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             homework.setCompleted(true);
+            homeworkList.updateHomeworkInList(homework);
             updateHw(hwDBWrite,homework,homework);
-            adapter.notifyDataSetChanged();
+//            adapter.notifyDataSetChanged();
             Toast.makeText(this, "Tarea marcada como completada", Toast.LENGTH_SHORT).show();
         });
 
@@ -145,9 +157,9 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Confirmar eliminación")
                 .setMessage("¿Estás seguro de que deseas eliminar este deber?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
-                    homeworkList.remove(homework);
+                    homeworkList.removeHomeworkFromList(homework);
                     deleteHW(hwDBWrite,homework);
-                    adapter.notifyDataSetChanged();
+//                    adapter.notifyDataSetChanged();
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
